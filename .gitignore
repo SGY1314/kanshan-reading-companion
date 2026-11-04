@@ -1,0 +1,15 @@
+node_modules/
+release/
+*.log
+work/
+.env
+.env.*
+!.env.example
+library.json
+credentials.bin
+pairing-token
+*.zip
+*.pem
+*.key
+.DS_Store
+Thumbs.db

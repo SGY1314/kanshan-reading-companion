@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "看山·阅读伙伴",
+  "version": "0.1.0",
+  "description": "在知乎原文划线、批注、解释，把阅读变成自己的答案。需搭配看山桌宠。",
+  "permissions": ["storage"],
+  "host_permissions": ["http://127.0.0.1:47831/*"],
+  "background": {"service_worker": "background.js"},
+  "action": {"default_title": "连接看山", "default_popup": "popup.html"},
+  "content_scripts": [{"matches": ["https://www.zhihu.com/*", "https://zhuanlan.zhihu.com/*"], "js": ["content.js"], "run_at": "document_idle"}]
+}

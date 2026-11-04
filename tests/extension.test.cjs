@@ -1,0 +1,25 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {JSDOM}=require('jsdom');
+const fs=require('node:fs');
+const os=require('node:os');
+const path=require('node:path');
+const vm=require('node:vm');
+const {createService}=require('../service.cjs');
+const wait=async check=>{for(let n=0;n<150;n++){if(check())return;await new Promise(r=>setTimeout(r,20));}throw new Error('UI response timed out');};
+test('plugin selection → note → problem → authenticated save → restored highlight',async t=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'kanshan-extension-'));const service=createService({dir,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});await new Promise(r=>service.server.listen(0,'127.0.0.1',r));t.after(()=>{service.server.close();fs.rmSync(dir,{recursive:true,force:true});});
+ const p=await service.route('POST','/api/problems',{title:'怎样开始学习？'});
+ const fakeChrome={storage:{local:{get:async()=>({token:service.token})}},runtime:{onMessage:{addListener:fn=>fakeChrome.handle=fn}}};
+ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../extension/background.js'),'utf8'),{chrome:fakeChrome,URL,AbortSignal,fetch:(url,options)=>fetch(String(url).replace(':47831',':'+service.server.address().port),options),Error,Set,JSON});
+ const dom=new JSDOM('<h1>如何开始学习</h1><div class="AnswerItem" data-zop=\'{"itemId":"123","authorName":"测试作者"}\'><div class="AuthorInfo-name">测试作者</div><div class="RichText"><p>前面的背景。先从小任务开始。后面的解释。</p></div></div>',{url:'https://www.zhihu.com/question/1',runScripts:'outside-only',pretendToBeVisual:true});t.after(()=>dom.window.close());
+ const w=dom.window;w.chrome={runtime:{sendMessage:message=>new Promise(resolve=>fakeChrome.handle(message,{tab:{url:w.location.href}},resolve))}};
+ const shadow=w.Element.prototype.attachShadow;w.Element.prototype.attachShadow=function(opts){const result=shadow.call(this,opts);w.testShadow=result;return result;};w.Range.prototype.getBoundingClientRect=()=>({left:30,bottom:100});w.HTMLElement.prototype.scrollIntoView=()=>{};w.CSS={highlights:new Map()};w.Highlight=class{constructor(...ranges){this.ranges=ranges;}};
+ w.eval(fs.readFileSync(path.join(__dirname,'../extension/content.js'),'utf8'));
+ const node=w.document.querySelector('.RichText p').firstChild;const range=w.document.createRange();range.setStart(node,7);range.setEnd(node,15);w.getSelection().addRange(range);w.document.dispatchEvent(new w.MouseEvent('mouseup',{bubbles:true}));
+ await wait(()=>w.testShadow.querySelector('.bar button'));w.testShadow.querySelector('.bar button').click();await wait(()=>w.testShadow.querySelector('#ks-save'));
+ w.testShadow.querySelector('#ks-note').value='我每天可以花十分钟';w.testShadow.querySelector('#ks-problem').value=p.id;w.testShadow.querySelector('#ks-save').click();await wait(()=>service.state().clips.length===1);
+ const saved=service.state().clips[0];assert.equal(saved.author,'测试作者');assert.equal(saved.url,'https://www.zhihu.com/answer/123');assert.equal(saved.problemId,p.id);assert.equal(saved.note,'我每天可以花十分钟');assert.ok(saved.context.includes(saved.quote));
+ await wait(()=>w.CSS.highlights.get('kanshan-saved')?.ranges.length===1);
+ w.testShadow.querySelector('.badge').click();await wait(()=>w.testShadow.querySelector('.panel .status')?.textContent.includes('恢复了 1'));
+});
