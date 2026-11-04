@@ -14,7 +14,13 @@ Windows 桌面悬浮宠物 + Chrome/Edge 知乎阅读插件。当前为本地版
 - 开启后用有限的阅读信号更新 AI 兴趣画像，支持查看依据、固定和纠正。
 - 阅读笔记保存在本机，支持 Markdown 导出；模型与知乎凭证使用 Windows 加密存储。
 
-仓库包含源码和浏览器插件。当前 Windows 程序包单独提供，不包含在 Git 历史中；如仓库尚无发布附件，请先按下方开发步骤本地运行。
+## 下载体验
+
+[打开 Windows 下载体验页](https://github.com/SGY1314/kanshan-reading-companion/releases/tag/v0.2.0)
+
+在发布页下方 **Assets** 下载 `Kanshan-v0.2.0-windows-x64.zip`，完整解压后双击 `Kanshan.exe`。同一页面提供单独的浏览器插件、中文使用说明和 SHA-256 校验值。GitHub 自动生成的 **Source code** 是源码，不是可直接运行的 Windows 程序。
+
+这是桌面版的下载入口，需要 Windows x64，不能在网页中直接运行。未配置 API 时可体验划线、批注、金句、问题笔记与导出；知乎检索和 AI 功能需使用自己的服务凭证。仓库包含源码和插件，程序包作为发布附件单独提供。
 
 ## 直接使用
 
