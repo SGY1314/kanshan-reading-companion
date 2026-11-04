@@ -47,7 +47,6 @@ function createInterestLearning({getDB, ai, persist, isConfigured, now = Date.no
         seen.add(key(topic));topics.push({topic,reason,confidence:Math.min(.95,confidence),evidenceIds:evidenceIds.filter(id=>rows.some(r=>r.id===id)),evidence:rows.filter(r=>evidenceIds.includes(r.id)).map(({source,positive,...r})=>r),updatedAt:new Date(now()).toISOString()});
         if(topics.length===6)break;
       }
-      // A malformed/non-grounded answer must not erase an existing valid profile.
       if(parsed.topics.length&&!topics.length)throw Error('模型给出的兴趣缺少有效依据，本次保留原画像。');
       db.learning.topics=topics;db.learning.updatedAt=new Date(now()).toISOString();db.learning.pending=Math.max(0,db.learning.pending-pendingAtStart);persist();return {topics};
     }catch(e){if(generation===epoch&&!disposed){db.learning.error=e.message;persist();}throw e;}

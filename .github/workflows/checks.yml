@@ -17,3 +17,4 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npx electron tests/smoke.cjs
+      - run: node tests/run-desktop.cjs

@@ -1,3 +1,4 @@
+const {modelResponse,messageText} = require('./fixtures.cjs');
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -19,7 +20,7 @@ test('offline library persists, validates source, and preserves evidence after d
 test('search contract, secret redaction and AI evidence/stance survive model request',async t=>{
  let payload;const s=setup(t,async(url,options)=>{
   if(String(url).includes('zhihu_search')){assert.equal(new URL(url).searchParams.get('Count'),'10');assert.equal(options.headers.Authorization,'Bearer zhihu-test');return {ok:true,json:async()=>({Code:0,Data:{Items:[{Title:'学习方法',AuthorName:'测试作者',ContentText:'<em>心理学</em>学习',Url:'https://www.zhihu.com/answer/123'},{Title:'bad',Url:'https://example.com'}]}})};}
-  payload=JSON.parse(options.body);return {ok:true,json:async()=>({choices:[{message:{content:'今天试做一个小任务。资料不足，需要验证。'}}]})};
+  payload=JSON.parse(options.body);return modelResponse('今天试做一个小任务。资料不足，需要验证。');
  });
  await s.route('POST','/api/config',{zhihuKey:'zhihu-test',aiKey:'ai-test',baseUrl:'https://model.example/v1',model:'test-model',interests:['心理学']});
  assert.ok(!JSON.stringify(await s.route('GET','/api/state')).includes('zhihu-test'));
@@ -28,7 +29,7 @@ test('search contract, secret redaction and AI evidence/stance survive model req
  const p=await s.route('POST','/api/problems',{title:'怎样学习'});
  const c=await s.route('POST','/api/clips',{quote:'需要长时间练习',url:'https://www.zhihu.com/answer/123',problemId:p.id,stance:'不适合我',note:'我只有十分钟'});
  const plan=await s.route('POST','/api/plan',{problemId:p.id,clipIds:[c.id]});
- assert.ok(payload.messages[1].content.includes('不适合我'));assert.ok(payload.messages[1].content.includes('我只有十分钟'));assert.equal(plan.evidence[0].ref,c.id.slice(0,8));
+ assert.ok(messageText(payload.messages[1]).includes('不适合我'));assert.ok(messageText(payload.messages[1]).includes('我只有十分钟'));assert.equal(plan.evidence[0].ref,c.id.slice(0,8));
  await s.route('POST','/api/clips/delete',{id:c.id});assert.equal(p.plans[0].evidence[0].quote,'需要长时间练习');
  await s.route('POST','/api/config',{...s.configState(),clearAI:true});assert.equal(s.configState().aiConfigured,false);assert.equal(s.configState().zhihuConfigured,true);
 });
@@ -48,9 +49,9 @@ test('remote failures are actionable and never fabricate content',async t=>{
 test('manual profile analysis requires confirmation and learned topics affect real search requests',async t=>{
  let prompt,query;
  const s=setup(t,async(url,options)=>{if(String(url).includes('zhihu_search')){query=new URL(url).searchParams.get('Query');return{ok:true,json:async()=>({Code:0,Data:{Items:[{Title:'学习习惯',ContentText:'学习习惯的小步练习',AuthorName:'作者',Url:'https://www.zhihu.com/answer/88'}]}})};}
- prompt=JSON.parse(options.body).messages[1].content;const signals=JSON.parse(prompt.split('\n').at(-1)).signals;return{ok:true,json:async()=>({choices:[{message:{content:JSON.stringify({topics:[{topic:'学习习惯',reason:'两篇资料都涉及练习',confidence:.8,evidenceIds:signals.map(s=>s.id)}]})}}]})};});
+ prompt=messageText(JSON.parse(options.body).messages[1]);const signals=JSON.parse(prompt.split('\n').at(-1)).signals;return modelResponse(JSON.stringify({topics:[{topic:'学习习惯',reason:'两篇资料都涉及练习',confidence:.8,evidenceIds:signals.map(s=>s.id)}]}));});
  t.after(()=>s.dispose());await s.route('POST','/api/config',{zhihuKey:'z',aiKey:'a',baseUrl:'https://model.example/v1',model:'m',interests:['阅读']});
  await s.route('POST','/api/clips',{title:'学习',quote:'先试十分钟',url:'https://www.zhihu.com/answer/1'});await s.route('POST','/api/clips',{title:'练习',quote:'小步练习',url:'https://www.zhihu.com/answer/2'});
  await assert.rejects(()=>s.route('POST','/api/interests/refresh',{}),/预览并确认/);await s.route('POST','/api/interests/refresh',{confirm:true});assert.ok(!prompt.includes('https://www.zhihu.com/'));
- const search=await s.route('POST','/api/search',{});assert.ok(query.includes('学习习惯'));assert.ok(search.results[0].reason.includes('AI 阅读画像'));
+ const search=await s.route('POST','/api/search',{});assert.ok(query.includes('学习习惯'));assert.ok(search.results[0].reason.includes('阅读偏好'));
 });

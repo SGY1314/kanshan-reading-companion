@@ -1,4 +1,4 @@
-// Own-application integration test. It uses synthetic local data and never calls a model.
+const {modelResponse,messageText} = require('./fixtures.cjs');
 const {app,BrowserWindow,ipcMain,safeStorage}=require('electron');
 const fs=require('node:fs');const path=require('node:path');const os=require('node:os');const assert=require('node:assert/strict');
 const {createService}=require('../service.cjs');
@@ -7,12 +7,11 @@ const screenshotsDir=path.resolve(__dirname,'../work/test-results');fs.mkdirSync
 app.whenReady().then(async()=>{
  try{
   assert.ok(await safeStorage.isAsyncEncryptionAvailable());
-  const service=createService({dir,encrypt:s=>safeStorage.encryptString(s),decrypt:b=>safeStorage.decryptString(b),fetchImpl:async(_url,options)=>{const payload=JSON.parse(options.body);const signals=JSON.parse(payload.messages[1].content.split('\n').at(-1)).signals;return{ok:true,json:async()=>({choices:[{message:{content:JSON.stringify({topics:[{topic:'学习习惯',reason:'两篇学习资料的重复关注',confidence:.8,evidenceIds:signals.map(s=>s.id)}]})}}]})};}});
-  ipcMain.handle('api',async(_e,{method,route,body})=>{try{return{data:await service.route(method,route,body)};}catch(e){return{error:e.message};}});
-  ipcMain.handle('export',()=>true);ipcMain.handle('connection',()=>({token:'test'}));
-  w=new BrowserWindow({width:1160,height:820,show:false,webPreferences:{preload:path.resolve(__dirname,'../preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  const service=createService({dir,encrypt:s=>safeStorage.encryptString(s),decrypt:b=>safeStorage.decryptString(b),fetchImpl:async(_url,options)=>{const payload=JSON.parse(options.body);const signals=JSON.parse(messageText(payload.messages[1]).split('\n').at(-1)).signals;return modelResponse(JSON.stringify({topics:[{topic:'学习习惯',reason:'两篇学习资料的重复关注',confidence:.8,evidenceIds:signals.map(s=>s.id)}]}));}});
+  await new Promise(resolve=>service.server.listen(0,'127.0.0.1',resolve));
+  w=new BrowserWindow({width:1160,height:820,show:false,webPreferences:{contextIsolation:true,nodeIntegration:false,sandbox:true}});
   const errors=[];w.webContents.on('console-message',(_event,...args)=>{const message=typeof _event==='object'?_event.message:args[1];if(message&&(/Uncaught|Content Security Policy/.test(message)))errors.push(message);});
-  await w.loadFile(path.resolve(__dirname,'../ui/index.html'));
+  await w.loadURL(service.launchUrl());
   const run=code=>w.webContents.executeJavaScript(code,true);
   const wait=async test=>{for(let i=0;i<150;i++){if(await run(test))return;await new Promise(r=>setTimeout(r,20));}throw Error('Timed out: '+test);};
   await wait('!!document.querySelector("#search-form")');
@@ -41,8 +40,29 @@ app.whenReady().then(async()=>{
   await run('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
   fs.writeFileSync(path.join(screenshotsDir,'interest-settings.png'),(await w.webContents.capturePage()).toPNG());
   await run('document.querySelector("[data-action=pin-interest]").click()');await wait('document.querySelector("[name=interests]").value.includes("学习习惯")');assert.ok(service.state().interests.includes('学习习惯'));
-  assert.deepEqual(errors,[]);service.dispose();
-  console.log('PASS Electron UI: reading flows, AI learning opt-in, data preview, profile generation and pinning; screenshot saved.');
+  assert.deepEqual(errors,[]);
+  assert.equal(await run('typeof require'), 'undefined');
+  assert.equal(await run('location.hash'), '');
+  assert.ok(await run('location.protocol === "http:"'));
+  assert.ok(!(await run('document.cookie')).includes('kanshan_session'));
+  await w.reload();
+  await wait('!!document.querySelector("#search-form")');
+  assert.equal(await run('document.querySelector("#clip-count").textContent'),'2');
+  const narrow=new BrowserWindow({width:390,height:844,show:false,webPreferences:{contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  await narrow.loadURL(service.launchUrl());
+  for(let i=0;i<100;i++){if(await narrow.webContents.executeJavaScript('!!document.querySelector("#search-form")'))break;await new Promise(r=>setTimeout(r,30));}
+  assert.ok(await narrow.webContents.executeJavaScript('document.documentElement.scrollWidth <= innerWidth'));
+  fs.writeFileSync(path.join(screenshotsDir,'mobile.png'),(await narrow.webContents.capturePage()).toPNG());
+  narrow.destroy();
+  let clicks=0;
+  ipcMain.handle('show-panel',()=>clicks++);ipcMain.handle('pet-menu',()=>{});
+  const pet=new BrowserWindow({width:190,height:278,show:false,frame:false,transparent:true,webPreferences:{preload:path.resolve(__dirname,'../preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  await pet.loadFile(path.resolve(__dirname,'../ui/pet.html'));
+  await pet.webContents.executeJavaScript('document.querySelector("#fox").click()');
+  await new Promise(r=>setTimeout(r,50));assert.equal(clicks,1);
+  fs.writeFileSync(path.join(screenshotsDir,'pet.png'),(await pet.webContents.capturePage()).toPNG());
+  pet.destroy();w.destroy();service.dispose();service.server.close();
+  console.log('PASS Browser HTTP UI and pet click: reading flows, AI learning opt-in, data preview, profile generation and pinning; screenshot saved.');
   app.exit(0);
  }catch(e){console.error(e);app.exit(1);}finally{fs.rmSync(dir,{recursive:true,force:true});}
 });

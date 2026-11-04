@@ -1,0 +1,13 @@
+{
+  "source": "User-provided original character design",
+  "sourceSHA256": "a80736b0da2db248fda2177887e5c675596acdfac236f09225b1549a4034a212",
+  "crop": [
+    307,
+    138,
+    619,
+    587
+  ],
+  "processing": "Original raster crop; only edge-connected pixels with all RGB channels >=235 become transparent. Interior pixels remain unchanged. Icons use uniform scaling and transparent padding. No redraw or deformation.",
+  "asset": "ui/kanshan.png",
+  "assetSHA256": "e300a19cf7bfedb55b0526a390b057c6dc508b1d6e7948486df7c34e5484ab46"
+}
