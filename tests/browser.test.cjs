@@ -17,7 +17,7 @@ test('browser session is single-use, expires, hides pairing token, and survives 
   const code = new URLSearchParams(launch.hash.slice(1)).get('launch');
   const home = await fetch(origin);
   const html = await home.text();
-  assert.ok(html.includes('bridge.js'));
+  assert.ok(html.includes('live.js'));
   assert.ok(!html.includes(service.token));
   assert.ok(home.headers.get('content-security-policy').includes("frame-ancestors 'none'"));
   const submit = (value,source=origin) => fetch(origin+'/api/session',{method:'POST',headers:{Origin:source,'Content-Type':'application/json'},body:JSON.stringify({code:value})});

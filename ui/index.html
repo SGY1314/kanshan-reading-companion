@@ -1,3 +1,15 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'"><meta name="viewport" content="width=device-width,initial-scale=1"><title>看山·阅读伙伴</title><link rel="stylesheet" href="style.css"><link rel="icon" href="favicon.ico"></head><body>
-<aside class="sidebar"><div class="brand"><div><strong>看山</strong><small>阅 读 伙 伴</small></div></div><div class="section-label">你的阅读空间</div><nav><button class="nav active" data-view="discover">今天读什么</button><button class="nav" data-view="problems">我有个问题</button><button class="nav" data-view="clips">我的摘录 <b id="clip-count">0</b></button><button class="nav" data-view="later">以后读</button></nav><div class="shelf-note"><img src="kanshan.png" alt="看山"><p>读过的每一句，<br>都可以成为你的答案。</p></div><button class="nav settings" data-view="settings">连接与偏好</button><div class="version">看山 · 0.3 / 本地阅读笔记</div></aside>
-<main><header><span id="breadcrumb">阅读空间 / 今天读什么</span><div>笔记保存在本机 <button id="export" class="text-button">导出笔记 ↗</button></div></header><div id="content"></div></main><div id="toast" role="status" hidden></div><dialog id="dialog"><div id="dialog-body"></div></dialog><script src="bridge.js"></script><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>看山 · 阅读伙伴</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="site-header">
+<a class="brand" href="#home" data-page="home">看山<span>阅读伙伴</span></a>
+<nav aria-label="主导航"><button data-page="home">今日阅读</button><button data-page="questions">带着问题</button><button data-page="notes">我的摘录<b id="note-count" hidden>0</b></button><button data-page="settings">我的偏好</button></nav>
+<div class="site-actions"></div>
+</header>
+<main><div hidden><span id="location">今日阅读</span><span id="today"></span></div><div id="app"></div></main>
+<dialog id="reader"><div id="reader-content"></div></dialog>
+<div id="toast" role="status" aria-live="polite" aria-atomic="true" hidden><img class="toast-pet" src="kanshan.png" alt="" aria-hidden="true"><div class="toast-bubble"><p id="toast-message"></p></div></div>
+<script src="app.js"></script><script src="live.js"></script><script src="experience.js"></script>
+</body>
+</html>

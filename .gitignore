@@ -13,3 +13,10 @@ pairing-token
 *.key
 .DS_Store
 Thumbs.db
+
+release-v0.6/
+
+demo-profile.json
+pet-settings.json
+pet-motion-preferences.json
+credentials.unreadable-*

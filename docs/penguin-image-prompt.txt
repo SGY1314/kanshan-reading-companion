@@ -1,0 +1,4 @@
+Built-in imagegen attempted; both calls returned HTTP 502. Final desktop uses the unchanged supplied image and separate SVG display masks for articulated head, torso, flippers, feet and tail. The original facial expression is preserved. Reading props are vector elements.
+
+Attempted prompt:
+Remove background from the attached photo. Isolate the entire plush penguin-costume girl figurine as one transparent PNG. Keep the same exact photographed toy, face, short dark bob hair, penguin hood with yellow beak, fuzzy white belly, black flippers, yellow feet, metal collar clasp, and rightward tail. Keep its original pose and realistic plush texture. Whole toy visible with transparent padding. Remove room, floor, carpet and text overlay. Do not redesign the character. Do not add props.

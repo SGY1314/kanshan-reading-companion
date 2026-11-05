@@ -1,1 +1,45 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self'"><title>看山</title><link rel="stylesheet" href="pet.css"></head><body><div class="handle" title="拖动这里移动看山" aria-label="拖动看山">···</div><button id="fox" title="在浏览器打开看山·阅读伙伴" aria-label="在浏览器打开看山·阅读伙伴"><img src="kanshan.png" alt="看山，来自原始设计稿" draggable="false"></button><button id="menu" title="隐藏或退出" aria-label="看山菜单">···</button><script src="pet.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self'"><meta name="viewport" content="width=device-width,initial-scale=1"><title>看山 · 阅读伙伴</title><link rel="stylesheet" href="pet.css"></head>
+<body data-state="reading">
+<div id="stage">
+<button id="fox" title="点击打开阅读伙伴，按住可拖动" aria-label="看山：点击打开阅读伙伴，按住拖动">
+<svg id="pet-art" viewBox="-24 -12 360 480" role="img" aria-label="黑白线稿看山阅读伙伴">
+<defs>
+<image id="character-source" href="kanshan.png" width="312" height="449"/>
+<filter id="ink-only" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -1 0 0 1 0"/></filter>
+<clipPath id="body-crop"><rect width="312" height="345"/></clipPath>
+<clipPath id="left-arm-crop"><rect x="78" y="175" width="67" height="110"/></clipPath>
+<clipPath id="right-arm-crop"><rect x="147" y="175" width="62" height="110"/></clipPath>
+<clipPath id="left-foot-crop"><rect x="78" y="345" width="44" height="97"/></clipPath>
+<clipPath id="right-foot-crop"><rect x="160" y="345" width="48" height="97"/></clipPath>
+</defs>
+<ellipse id="ground" cx="156" cy="440" rx="73" ry="5"/>
+<g id="loose-pages"><path d="M74 405L115 399L120 424L79 430Z"/><path d="M199 405L237 415L231 440L193 430Z"/></g>
+<g id="actor">
+<g id="left-foot"><use href="#character-source" clip-path="url(#left-foot-crop)"/></g>
+<g id="right-foot"><use href="#character-source" clip-path="url(#right-foot-crop)"/></g>
+<g id="upper">
+<g id="head"><use href="#character-source" clip-path="url(#body-crop)"/><path fill="white" d="M78 175H145V285H78ZM147 175H209V285H147Z"/></g>
+<g id="book">
+<path class="book-cover" d="M80 246Q116 237 153 249Q190 237 226 246L220 310Q185 301 153 313Q118 301 86 310Z"/>
+<path class="book-sheet" d="M86 241Q120 234 153 245Q187 234 220 241L214 303Q183 295 153 307Q121 295 92 303Z"/>
+<path class="book-spine" d="M153 245V307"/>
+<g class="book-lines"><path d="M99 254Q119 249 140 257M100 268Q120 263 140 271M102 282Q122 277 140 285M165 257Q186 249 207 254M165 271Q186 263 206 268M165 285Q185 277 204 282"/></g>
+<g id="turning-page"><path d="M153 245Q187 234 220 241L214 303Q183 295 153 307Z"/></g>
+<path id="written-note" d="M175 289L181 285L188 290L197 285"/>
+<g id="pen"><path d="M224 246L197 288"/><path class="pen-nib" d="M196 284L193 295L201 288Z"/></g>
+</g>
+<g id="left-flipper"><use href="#character-source" clip-path="url(#left-arm-crop)" filter="url(#ink-only)"/></g>
+<g id="right-flipper"><use href="#character-source" clip-path="url(#right-arm-crop)" filter="url(#ink-only)"/></g>
+</g>
+</g>
+</svg>
+</button>
+<div id="bubble" role="status" aria-live="polite"></div>
+<div id="pet-caption" aria-live="polite">陪你读一会儿</div>
+<button id="menu" title="看山菜单" aria-label="看山菜单">···</button>
+</div>
+<script src="pet-behavior.js"></script><script src="pet.js"></script>
+</body>
+</html>

@@ -41,10 +41,33 @@ test('loopback service rejects absent pairing token and hostile origin',async t=
  const r=await request({Authorization:'Bearer '+s.token});assert.equal(r.status,200);assert.deepEqual((await r.json()).clips,[]);
 });
 test('library and pairing survive restart',async t=>{
- const dir=fs.mkdtempSync(path.join(os.tmpdir(),'kanshan-persist-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));const options={dir,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()};const a=createService(options);await a.route('POST','/api/clips',{quote:'hello',url:'https://zhuanlan.zhihu.com/p/1'});const b=createService(options);assert.equal(b.state().clips.length,1);assert.equal(a.token,b.token);
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'kanshan-persist-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));const options={dir,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()};const a=createService(options);await a.route('POST','/api/clips',{quote:'hello',url:'https://zhuanlan.zhihu.com/p/1'});await a.route('POST','/api/memory/config',{enabled:true,preferences:'每天十分钟'});await a.route('POST','/api/memory/visit',{url:'https://zhuanlan.zhihu.com/p/1',title:'阅读方法',kind:'read',activeSeconds:25,sessionId:'persist-session-123'});const b=createService(options);assert.equal(b.state().clips.length,1);assert.equal(a.token,b.token);assert.equal(b.state().memory.records[0].activeSeconds,25);assert.equal(b.state().memory.preferences,'每天十分钟');a.dispose();b.dispose();
 });
 test('remote failures are actionable and never fabricate content',async t=>{
  const s=setup(t,async()=>({ok:false,status:429}));await s.route('POST','/api/config',{zhihuKey:'test'});await assert.rejects(()=>s.route('POST','/api/search',{query:'test'}),/429/);
+});
+
+test('reading memory persists, suppresses repeats only in discovery, and clearing keeps notes',async t=>{
+ let payload;const s=setup(t,async(url,options)=>{
+  if(String(url).includes('zhihu_search'))return{ok:true,json:async()=>({Code:0,Data:{Items:[{Title:'阅读方法',ContentText:'十分钟阅读',Url:'https://www.zhihu.com/question/1/answer/2'}]}})};
+  payload=messageText(JSON.parse(options.body).messages[1]);return modelResponse('从十分钟开始。');
+ });t.after(()=>s.dispose());
+ await s.route('POST','/api/config',{zhihuKey:'z',aiKey:'a',baseUrl:'https://model.example/v1',model:'m'});
+ assert.equal((await s.route('GET','/api/memory/status')).enabled,false);
+ await s.route('POST','/api/memory/config',{enabled:true,preferences:'每天十分钟'});
+ const event={url:'https://www.zhihu.com/answer/2',title:'阅读方法',kind:'read',sessionId:'test-session-123',activeSeconds:25};
+ const record=await s.route('POST','/api/memory/visit',event);
+ assert.equal((await s.route('POST','/api/search',{})).hiddenReadCount,1);
+ assert.equal((await s.route('POST','/api/search',{})).results.length,0);
+ assert.equal((await s.route('POST','/api/search',{query:'阅读'})).results[0].seen,true);
+ await s.route('POST','/api/memory/config',{avoidSeen:false});assert.equal((await s.route('POST','/api/search',{})).results.length,1);
+ assert.ok(!JSON.stringify(await s.route('GET','/api/state')).includes('test-session-123'));
+ const clip=await s.route('POST','/api/clips',{url:event.url,title:'阅读方法',quote:'先读十分钟'});
+ await s.route('POST','/api/explain',{id:clip.id});assert.ok(payload.includes('每天十分钟'));
+ await s.route('POST','/api/memory/forget',{id:record.item.id});assert.equal((await s.route('POST','/api/memory/visit',event)).reason,'forgotten');
+ await assert.rejects(()=>s.route('POST','/api/memory/clear',{}),/确认/);
+ await s.route('POST','/api/memory/clear',{confirm:true});const state=await s.route('GET','/api/state');
+ assert.equal(state.clips.length,1);assert.equal(state.memory.enabled,false);assert.equal(state.memory.preferences,'');assert.equal(state.learning.enabled,false);
 });
 test('manual profile analysis requires confirmation and learned topics affect real search requests',async t=>{
  let prompt,query;

@@ -9,5 +9,26 @@
   ],
   "processing": "Original raster crop; only edge-connected pixels with all RGB channels >=235 become transparent. Interior pixels remain unchanged. Icons use uniform scaling and transparent padding. No redraw or deformation.",
   "asset": "ui/kanshan.png",
-  "assetSHA256": "e300a19cf7bfedb55b0526a390b057c6dc508b1d6e7948486df7c34e5484ab46"
+  "assetSHA256": "e300a19cf7bfedb55b0526a390b057c6dc508b1d6e7948486df7c34e5484ab46",
+  "animation": {
+    "method": "Original raster unchanged. SVG clips separate arms and legs; a runtime alpha filter removes the white background around moving arms. White interior patches cover the original resting arms. The original body contour and facial features are reused. Reading poses show monochrome book and pen props.",
+    "states": [
+      "reading",
+      "thinking",
+      "annotating",
+      "dragging",
+      "landing",
+      "tidying",
+      "edge"
+    ],
+    "originalRasterUnchanged": true
+  },
+  "legacyDesignRetained": true,
+  "activeAvatar": {
+    "asset": "ui/kanshan.png",
+    "source": "Existing original black-and-white Kanshan character selected by the user from the reading homepage, 2026-11-05",
+    "sha256": "e300a19cf7bfedb55b0526a390b057c6dc508b1d6e7948486df7c34e5484ab46",
+    "processing": "Original raster unchanged. SVG clips separate arms and legs; a runtime alpha filter removes the white background around moving arms. White interior patches cover the original resting arms. The original body contour and facial features are reused. Reading poses show monochrome book and pen props.",
+    "motionSpecification": "docs/pet-actions.json"
+  }
 }

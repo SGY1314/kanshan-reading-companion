@@ -1,0 +1,70 @@
+{
+  "version": "0.6.6",
+  "identity": "用户提供的企鹅服玩偶原图保持不变；头、身体、左右翅膀、双脚、尾巴分别运动，脸部表情沿用原图。",
+  "idle": [
+    {
+      "state": "reading",
+      "action": "呼吸、低头、左手翻页，7 秒循环"
+    },
+    {
+      "state": "sittingReading",
+      "action": "10.5 秒：落座、双脚前伸、慢翻两页、起身"
+    },
+    {
+      "state": "thinking",
+      "action": "6.5 秒：抬手托腮、歪头停留、放手"
+    },
+    {
+      "state": "annotating",
+      "action": "7.5 秒：握笔轻写、墨迹逐渐出现"
+    },
+    {
+      "state": "closeReading",
+      "action": "6.5 秒：举书、低头细读、放回"
+    },
+    {
+      "state": "swaying",
+      "action": "6 秒：交替晃脚、尾巴轻摆"
+    },
+    {
+      "state": "stretching",
+      "action": "4.2 秒：抬起双翅、伸展、放下"
+    },
+    {
+      "state": "dozing",
+      "action": "14 秒：抱书、慢慢垂头，随后醒来"
+    },
+    {
+      "state": "waking",
+      "action": "1.8 秒：抬头、扶稳书、恢复阅读"
+    },
+    {
+      "state": "greeting",
+      "action": "1.8 秒：一手抱书、一手招两次"
+    }
+  ],
+  "interaction": [
+    {
+      "state": "dragging",
+      "action": "按住拖动：书本悬晃、双手抓书、双脚和尾巴摆动"
+    },
+    {
+      "state": "landing",
+      "action": "松手落地：1.1 秒踉跄、扶住翻开的页，接着整理"
+    },
+    {
+      "state": "tidying",
+      "action": "3.6 秒蹲下、分别收拢两张散页、站稳继续阅读"
+    },
+    {
+      "state": "edgeLeft / edgeRight / edgeTop",
+      "action": "贴边：对应翅膀扒边、另一只抱书；轻轻探头、晃脚，持续到再次拖动"
+    },
+    {
+      "state": "saved",
+      "action": "保存：1.6 秒点头抱书；拖拽与落地期间排队，贴边时反馈后回到贴边"
+    }
+  ],
+  "preview": "右键桌宠 → 看看动作。预览悬空会自动接落地和整理；预览贴边 5 秒后回到阅读。",
+  "accessibility": "遵循系统减少动态效果设置。"
+}

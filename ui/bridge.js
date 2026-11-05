@@ -17,10 +17,6 @@
       if (target.protocol !== 'https:' || !(target.hostname === 'zhihu.com' || target.hostname.endsWith('.zhihu.com'))) throw new Error('仅支持知乎链接');
       window.open(target.href,'_blank','noopener,noreferrer');
     },
-    copyToken: async () => {
-      const {token} = await api('GET','/api/connection');
-      await navigator.clipboard.writeText(token);
-    },
     extension: () => api('POST','/api/extension',{}),
     export: async text => {
       const url = URL.createObjectURL(new Blob([text],{type:'text/markdown;charset=utf-8'}));
